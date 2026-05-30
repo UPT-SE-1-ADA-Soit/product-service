@@ -27,4 +27,6 @@ public class CreateProductRequest {
     private String region;
 
     private List<AttributePairRequest> attributes;
+
+    private List<String> imageUrls;
 }

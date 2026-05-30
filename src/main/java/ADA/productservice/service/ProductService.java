@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,12 +30,14 @@ public class ProductService {
     private final ListedProductRepository listedProductRepository;
     private final UserRepository userRepository;
     private final RecommendationService recommendationService;
+    private final OrderRepository orderRepository;
+    private final FavoriteRepository favoriteRepository;
 
     @Transactional(readOnly = true)
     public List<ProductSummaryDto> getProducts(
             Integer categoryId, List<Integer> validAttributeIds,
             BigDecimal priceMin, BigDecimal priceMax,
-            Integer recommendForUserId, String searchQuery) {
+            Integer recommendForUserId, String searchQuery, Boolean inStock) {
 
         if (recommendForUserId != null) {
             List<Integer> recommendedIds = recommendationService.getRecommendedIds(recommendForUserId);
@@ -50,7 +53,7 @@ public class ProductService {
         }
 
         Specification<Product> spec = ProductSpec.withFilters(
-                categoryId, priceMin, priceMax, searchQuery, null);
+                categoryId, priceMin, priceMax, searchQuery, null, inStock);
 
         if (validAttributeIds != null && !validAttributeIds.isEmpty()) {
             spec = spec.and(ProductSpec.hasAllAttributes(validAttributeIds));
@@ -74,12 +77,15 @@ public class ProductService {
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", sellerId));
 
+        List<String> imageUrls = request.getImageUrls() != null ? request.getImageUrls() : new ArrayList<>();
+
         Product product = productRepository.save(Product.builder()
                 .name(request.getName())
                 .category(category)
                 .price(request.getPrice())
                 .description(request.getDescription())
                 .region(request.getRegion())
+                .imageUrls(imageUrls)
                 .build());
 
         listedProductRepository.save(ListedProduct.builder()
@@ -105,6 +111,10 @@ public class ProductService {
         product.setPrice(request.getPrice());
         product.setDescription(request.getDescription());
         product.setRegion(request.getRegion());
+        if (request.getImageUrls() != null) {
+            product.getImageUrls().clear();
+            product.getImageUrls().addAll(request.getImageUrls());
+        }
         product = productRepository.save(product);
 
         pairRepository.deleteAllByProduct_Id(id);
@@ -118,6 +128,8 @@ public class ProductService {
         pairRepository.deleteAllByProduct_Id(id);
         listedProductRepository.deleteAllByProduct_Id(id);
         historyRepository.deleteAllByProduct_Id(id);
+        orderRepository.deleteAllByProduct_Id(id);
+        favoriteRepository.deleteAllByProduct_Id(id);
         productRepository.deleteById(id);
     }
 
@@ -127,12 +139,16 @@ public class ProductService {
                 .map(p -> p.getAttribute().getId())
                 .distinct()
                 .toList();
+        String thumbnailUrl = product.getImageUrls().isEmpty() ? null : product.getImageUrls().get(0);
         return ProductSummaryDto.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .categoryId(product.getCategory().getId())
                 .price(product.getPrice())
                 .attributeIds(attrIds)
+                .inStock(product.isInStock())
+                .thumbnailUrl(thumbnailUrl)
+                .region(product.getRegion())
                 .build();
     }
 
@@ -155,6 +171,11 @@ public class ProductService {
                         .valueName(p.getAttributeValue().getName())
                         .build())
                 .toList();
+
+        Integer sellerId = listedProductRepository.findFirstByProduct_Id(product.getId())
+                .map(lp -> lp.getUser().getId())
+                .orElse(null);
+
         return ProductDetailDto.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -165,6 +186,9 @@ public class ProductService {
                 .addedDate(product.getAddedDate())
                 .region(product.getRegion())
                 .attributes(attrs)
+                .inStock(product.isInStock())
+                .sellerId(sellerId)
+                .imageUrls(product.getImageUrls())
                 .build();
     }
 

@@ -19,4 +19,7 @@ public class ProductDetailDto {
     private LocalDate addedDate;
     private String region;
     private List<ProductAttributeEntryDto> attributes;
+    private boolean inStock;
+    private Integer sellerId;
+    private List<String> imageUrls;
 }

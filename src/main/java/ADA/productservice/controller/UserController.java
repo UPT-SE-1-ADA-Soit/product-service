@@ -48,6 +48,27 @@ public class UserController {
         service.addToHistory(userId, productId);
     }
 
+    @GetMapping("/{userId}/favorites")
+    public List<ProductSummaryDto> getFavorites(@PathVariable Integer userId) {
+        return service.getFavorites(userId);
+    }
+
+    @PostMapping("/{userId}/favorites/{productId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addFavorite(@PathVariable Integer userId,
+                            @PathVariable Integer productId,
+                            Authentication auth) {
+        service.addFavorite(userId, productId, extractUserId(auth));
+    }
+
+    @DeleteMapping("/{userId}/favorites/{productId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeFavorite(@PathVariable Integer userId,
+                               @PathVariable Integer productId,
+                               Authentication auth) {
+        service.removeFavorite(userId, productId, extractUserId(auth));
+    }
+
     private Integer extractUserId(Authentication auth) {
         return Integer.parseInt((String) auth.getPrincipal());
     }

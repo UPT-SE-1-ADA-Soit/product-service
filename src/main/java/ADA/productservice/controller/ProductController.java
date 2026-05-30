@@ -29,8 +29,9 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal priceMin,
             @RequestParam(required = false) BigDecimal priceMax,
             @RequestParam(required = false) Integer recommendForUserId,
-            @RequestParam(required = false) String searchQuery) {
-        return service.getProducts(categoryId, validAttributeIds, priceMin, priceMax, recommendForUserId, searchQuery);
+            @RequestParam(required = false) String searchQuery,
+            @RequestParam(defaultValue = "true") Boolean inStock) {
+        return service.getProducts(categoryId, validAttributeIds, priceMin, priceMax, recommendForUserId, searchQuery, inStock);
     }
 
     @GetMapping("/{id}")

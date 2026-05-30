@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "product")
@@ -35,6 +37,17 @@ public class Product {
 
     @Column(nullable = false)
     private String region;
+
+    @Builder.Default
+    @Column(name = "in_stock", nullable = false)
+    private boolean inStock = true;
+
+    @Builder.Default
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_image", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url")
+    @OrderColumn(name = "position")
+    private List<String> imageUrls = new ArrayList<>();
 
     @PrePersist
     private void prePersist() {

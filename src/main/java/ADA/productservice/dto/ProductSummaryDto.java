@@ -14,4 +14,7 @@ public class ProductSummaryDto {
     private Integer categoryId;
     private BigDecimal price;
     private List<Integer> attributeIds;
+    private boolean inStock;
+    private String thumbnailUrl;
+    private String region;
 }

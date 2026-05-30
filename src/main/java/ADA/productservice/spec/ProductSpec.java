@@ -18,7 +18,8 @@ public class ProductSpec {
             BigDecimal priceMin,
             BigDecimal priceMax,
             String searchQuery,
-            List<Integer> recommendedCategoryIds) {
+            List<Integer> recommendedCategoryIds,
+            Boolean inStock) {
 
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -41,6 +42,9 @@ public class ProductSpec {
                         cb.like(cb.lower(root.get("name")), pattern),
                         cb.like(cb.lower(root.get("description")), pattern)
                 ));
+            }
+            if (inStock != null) {
+                predicates.add(cb.equal(root.get("inStock"), inStock));
             }
 
             query.distinct(true);
