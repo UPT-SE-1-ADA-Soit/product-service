@@ -62,13 +62,15 @@ jobs:
           service: ${{ env.CLOUD_RUN_SERVICE }}
           region: ${{ env.GCP_REGION }}
           image: ${{ env.IMAGE }}
-          flags: --allow-unauthenticated
+          flags: --ingress=internal-and-cloud-load-balancing --allow-unauthenticated
           env_vars: |
             DB_URL=${{ secrets.DB_URL }}
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            AUTH_SERVICE_URL=${{ secrets.AUTH_SERVICE_URL }}
+            MESSAGING_SERVICE_URL=${{ secrets.MESSAGING_SERVICE_URL }}
 
       - name: Print service URL
         run: echo "Deployed to ${{ steps.deploy.outputs.url }}"
