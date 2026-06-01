@@ -62,7 +62,7 @@ jobs:
           service: ${{ env.CLOUD_RUN_SERVICE }}
           region: ${{ env.GCP_REGION }}
           image: ${{ env.IMAGE }}
-          flags: --ingress=internal-and-cloud-load-balancing --allow-unauthenticated
+          flags: --ingress=internal-and-cloud-load-balancing --allow-unauthenticated --port=8080
           env_vars: |
             DB_URL=${{ secrets.DB_URL }}
             DB_USER=${{ secrets.DB_USER }}
